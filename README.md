@@ -28,14 +28,6 @@ pnpm add @jsupa/mongoose-paranoia
 yarn add @jsupa/mongoose-paranoia
 ```
 
-### Configure GitHub Packages
-
-Create or update your `.npmrc` file:
-
-```
-@jsupa:registry=https://npm.pkg.github.com/
-```
-
 ## 🚀 Quick Start
 
 ```typescript
