@@ -64,20 +64,22 @@ const users = await User.find(); // Only returns non-deleted users
 ### Basic Example
 
 ```typescript
-import mongoose, { Schema, Model } from 'mongoose';
-import Paranoia, { ParanoiaDocument, ParanoiaQueryHelpers, ParanoiaStatics } from '@jsupa/mongoose-paranoia';
+import mongoose, { Schema, model } from 'mongoose';
+import Paranoia, { 
+  SoftDeleteDocument, 
+  ParanoiaModel, 
+  ParanoiaQueryHelpers 
+} from '@jsupa/mongoose-paranoia';
 
-interface IUser extends ParanoiaDocument {
+interface IUser {
   name: string;
   email: string;
 }
 
-const userSchema = new Schema<
-  IUser, 
-  Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics,
-  {},
-  ParanoiaQueryHelpers
->({
+type UserDocument = SoftDeleteDocument<IUser>;
+type UserModel = ParanoiaModel<UserDocument, ParanoiaQueryHelpers>;
+
+const userSchema = new Schema<UserDocument, UserModel, {}, ParanoiaQueryHelpers>({
   name: String,
   email: String
 });
@@ -88,7 +90,7 @@ userSchema.plugin(Paranoia, {
   activeArchive: 'Default' // Auto-filter deleted records
 });
 
-const User = mongoose.model<IUser, Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics>('User', userSchema);
+const User = model<UserDocument, UserModel>('User', userSchema);
 ```
 
 ### Configuration Options
@@ -130,10 +132,10 @@ userSchema.plugin(Paranoia, { activeArchive: 'Default' });
 const activeUsers = await User.find();
 
 // Returns all users including deleted
-const allUsers = await (User.find() as any).withDeleted();
+const allUsers = await User.find().withDeleted();
 
 // Only returns deleted users
-const deletedUsers = await (User.find() as any).deleted();
+const deletedUsers = await User.find().deleted();
 ```
 
 ### Scope Mode
@@ -147,10 +149,10 @@ userSchema.plugin(Paranoia, { activeArchive: 'Scope' });
 const allUsers = await User.find();
 
 // Returns only active users
-const activeUsers = await (User.find() as any).active();
+const activeUsers = await User.find().active();
 
 // Returns only deleted users
-const deletedUsers = await (User.find() as any).deleted();
+const deletedUsers = await User.find().deleted();
 ```
 
 ### All Mode
@@ -164,7 +166,7 @@ userSchema.plugin(Paranoia, { activeArchive: 'All' });
 const allUsers = await User.find();
 
 // Returns only active users
-const activeUsers = await (User.find() as any).active();
+const activeUsers = await User.find().active();
 ```
 
 ## 🔨 API Reference
@@ -175,13 +177,13 @@ All query helpers work with `find()`, `findOne()`, `countDocuments()`, and `aggr
 
 ```typescript
 // Get only active (non-deleted) records
-const active = await (User.find() as any).active();
+const active = await User.find().active();
 
 // Get only deleted records
-const deleted = await (User.find() as any).deleted();
+const deleted = await User.find().deleted();
 
 // Get all records (bypass default filtering)
-const all = await (User.find() as any).withDeleted();
+const all = await User.find().withDeleted();
 ```
 
 ### Soft Delete Methods
@@ -204,7 +206,7 @@ await User.findByIdAndDelete(userId);
 
 ```typescript
 // Restore a single document (instance method)
-const user = await (User.findById(userId) as any).withDeleted();
+const user = await User.findById(userId).withDeleted();
 await user.restore();
 
 // Restore multiple documents (static method)
@@ -261,9 +263,9 @@ const stats = await User.aggregate([
 ]);
 
 // Include deleted records in aggregation
-const allStats = await (User.aggregate([
+const allStats = await User.aggregate([
   { $group: { _id: '$status', count: { $sum: 1 } } }
-]) as any).withDeleted();
+]).withDeleted();
 ```
 
 ## 🔧 TypeScript Support
@@ -295,12 +297,97 @@ const userSchema = new Schema<
 
 userSchema.plugin(Paranoia);
 
-const User = mongoose.model<
-  IUser, 
-  Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics
->('User', userSchema);
+const User = model<UserDocument, UserModel>('User', userSchema);
 
 // Now you have full type safety!
+```
+
+### Type Helpers
+
+The plugin exports several TypeScript helpers to make your code more type-safe:
+
+#### `SoftDeleteDocument<T>`
+
+A type helper that combines your document interface with `ParanoiaDocument`:
+
+```typescript
+interface IUser {
+  name: string;
+  email: string;
+}
+
+// Automatically includes: deleted, deletedAt, deletedBy, restore()
+type UserDocument = SoftDeleteDocument<IUser>;
+```
+
+#### `ParanoiaModel<T, TQueryHelpers>`
+
+An enhanced Model interface that includes all Paranoia plugin methods:
+
+```typescript
+type UserModel = ParanoiaModel<UserDocument, ParanoiaQueryHelpers>;
+
+// Provides type-safe access to:
+// - model.restore(filter)
+// - All overridden delete methods
+```
+
+#### `ParanoiaQueryHelpers`
+
+Query helper interface for type-safe query methods:
+
+```typescript
+const userSchema = new Schema<UserDocument, UserModel, {}, ParanoiaQueryHelpers>({
+  // schema definition
+});
+
+// Provides type-safe access to:
+// - query.active()
+// - query.deleted()
+// - query.withDeleted()
+```
+
+### Full TypeScript Example
+
+```typescript
+import mongoose, { Schema, model } from 'mongoose';
+import Paranoia, { 
+  SoftDeleteDocument, 
+  ParanoiaModel, 
+  ParanoiaQueryHelpers 
+} from '@jsupa/mongoose-paranoia';
+
+// 1. Define your base interface
+interface IUser {
+  name: string;
+  email: string;
+}
+
+// 2. Create document type with paranoia fields
+type UserDocument = SoftDeleteDocument<IUser>;
+
+// 3. Create model type with paranoia methods
+type UserModel = ParanoiaModel<UserDocument, ParanoiaQueryHelpers>;
+
+// 4. Define schema with full type safety
+const userSchema = new Schema<UserDocument, UserModel, {}, ParanoiaQueryHelpers>({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true }
+});
+
+// 5. Add plugin
+userSchema.plugin(Paranoia);
+
+// 6. Create model
+const User = model<UserDocument, UserModel>('User', userSchema);
+
+// 7. Use with full type safety!
+const user = await User.create({ name: 'John', email: 'john@example.com' });
+await user.restore(); // ✅ Type-safe instance method
+
+await User.restore({ email: 'john@example.com' }); // ✅ Type-safe static method
+
+const activeUsers = await User.find().active(); // ✅ Type-safe query helper
 ```
 
 ## 🧪 Testing

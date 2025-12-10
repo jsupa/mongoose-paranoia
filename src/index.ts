@@ -1,4 +1,4 @@
-import type { Query, QueryWithHelpers, UpdateWriteOpResult } from 'mongoose'
+import type { Model, Query, QueryWithHelpers, UpdateWriteOpResult, HydratedDocument } from 'mongoose'
 import { Schema } from 'mongoose'
 
 /**
@@ -31,6 +31,38 @@ export interface ParanoiaStatics {
    */
   restore(filter: any): Promise<UpdateWriteOpResult>
 }
+
+/**
+ * Enhanced Model interface with Paranoia plugin methods
+ * Use this when defining your model type for full type safety
+ *
+ * @example
+ * ```typescript
+ * interface IUser {
+ *   name: string;
+ *   email: string;
+ * }
+ *
+ * type UserDocument = SoftDeleteDocument<IUser>;
+ * type UserModel = ParanoiaModel<UserDocument, ParanoiaQueryHelpers>;
+ *
+ * const userSchema = new Schema<UserDocument, UserModel, {}, ParanoiaQueryHelpers>({
+ *   name: String,
+ *   email: String
+ * });
+ *
+ * userSchema.plugin(Paranoia);
+ * const User = model<UserDocument, UserModel>('User', userSchema);
+ * ```
+ */
+export interface ParanoiaModel<
+  T,
+  TQueryHelpers = {},
+  TInstanceMethods = {},
+  TVirtuals = {},
+  THydratedDocumentType = HydratedDocument<T, TVirtuals & TInstanceMethods, TQueryHelpers>,
+  TSchema = any,
+> extends Model<T, TQueryHelpers, TInstanceMethods, TVirtuals, THydratedDocumentType, TSchema>, ParanoiaStatics {}
 
 /**
  * Options for configuring the Paranoia plugin
@@ -84,6 +116,15 @@ export type ParanoiaOptions = {
 
 /**
  * Interface for documents with paranoia fields
+ * Extend your document interface with this to include soft delete fields
+ *
+ * @example
+ * ```typescript
+ * interface IUser extends ParanoiaDocument {
+ *   name: string;
+ *   email: string;
+ * }
+ * ```
  */
 export interface ParanoiaDocument {
   /**
@@ -106,6 +147,22 @@ export interface ParanoiaDocument {
    */
   restore(): Promise<this>
 }
+
+/**
+ * Type helper for creating a fully-typed Paranoia document
+ * Combines your document interface with ParanoiaDocument
+ *
+ * @example
+ * ```typescript
+ * interface IUser {
+ *   name: string;
+ *   email: string;
+ * }
+ *
+ * type UserDocument = SoftDeleteDocument<IUser>;
+ * ```
+ */
+export type SoftDeleteDocument<T> = T & ParanoiaDocument
 
 export default function Paranoia<
   DocType = any,
