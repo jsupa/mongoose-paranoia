@@ -1,0 +1,40 @@
+{
+  "name": "mongoose-paranoia",
+  "version": "1.0.0",
+  "description": "A Mongoose plugin for soft deletes with paranoid mode",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "keywords": [],
+  "author": "jsupa <toto.je@kubov.email>",
+  "license": "MIT",
+  "packageManager": "pnpm@10.22.0",
+  "type": "module",
+  "peerDependencies": {
+    "mongoose": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "@vitest/ui": "^4.0.15",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "mongodb-memory-server": "^10.4.1",
+    "prettier": "^3.7.4",
+    "tsdown": "^0.17.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}
