@@ -255,6 +255,9 @@ export default function Paranoia<
      * Filter to only return active (not deleted) records
      */
     active(this: Query<any, any>) {
+      if (!opts.deletedField) {
+        throw new Error('deletedField is required for active query helper')
+      }
       return this.where({ [opts.deletedField]: false })
     },
 
@@ -262,6 +265,9 @@ export default function Paranoia<
      * Filter to only return deleted records
      */
     deleted(this: Query<any, any>) {
+      if (!opts.deletedField) {
+        throw new Error('deletedField is required for deleted query helper')
+      }
       return this.where({ [opts.deletedField]: true })
     },
 
@@ -284,6 +290,11 @@ export default function Paranoia<
         return
       }
 
+      // Ensure deletedField exists
+      if (!opts.deletedField) {
+        return
+      }
+
       // Add deleted: false to the query filter
       const filter = this.getFilter()
       if (filter[opts.deletedField] === undefined) {
@@ -302,6 +313,11 @@ export default function Paranoia<
     schema.pre('aggregate', function (this: any) {
       // Skip if explicitly wanting all records
       if (this._includeDeleted) {
+        return
+      }
+
+      // Ensure deletedField exists
+      if (!opts.deletedField) {
         return
       }
 

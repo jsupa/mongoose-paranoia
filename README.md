@@ -56,22 +56,24 @@ const users = await User.find(); // Only returns non-deleted users
 ### Basic Example
 
 ```typescript
-import mongoose, { Schema, model } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 import Paranoia, { 
-  SoftDeleteDocument, 
-  ParanoiaModel, 
-  ParanoiaQueryHelpers 
+  type ParanoiaDocument, 
+  type ParanoiaQueryHelpers, 
+  type ParanoiaStatics 
 } from '@jsupa/mongoose-paranoia';
 
-interface IUser {
+interface IUser extends ParanoiaDocument {
   name: string;
   email: string;
 }
 
-type UserDocument = SoftDeleteDocument<IUser>;
-type UserModel = ParanoiaModel<UserDocument, ParanoiaQueryHelpers>;
-
-const userSchema = new Schema<UserDocument, UserModel, {}, ParanoiaQueryHelpers>({
+const userSchema = new Schema<
+  IUser,
+  Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics,
+  {},
+  ParanoiaQueryHelpers
+>({
   name: String,
   email: String
 });
@@ -82,7 +84,7 @@ userSchema.plugin(Paranoia, {
   activeArchive: 'Default' // Auto-filter deleted records
 });
 
-const User = model<UserDocument, UserModel>('User', userSchema);
+const User = mongoose.model<IUser, Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics>('User', userSchema);
 ```
 
 ### Configuration Options
@@ -265,11 +267,11 @@ const allStats = await User.aggregate([
 Full TypeScript support with proper type definitions:
 
 ```typescript
-import { Model, Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import Paranoia, { 
-  ParanoiaDocument, 
-  ParanoiaQueryHelpers, 
-  ParanoiaStatics 
+  type ParanoiaDocument, 
+  type ParanoiaQueryHelpers, 
+  type ParanoiaStatics 
 } from '@jsupa/mongoose-paranoia';
 
 interface IUser extends ParanoiaDocument {
@@ -289,7 +291,7 @@ const userSchema = new Schema<
 
 userSchema.plugin(Paranoia);
 
-const User = model<UserDocument, UserModel>('User', userSchema);
+const User = mongoose.model<IUser, Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics>('User', userSchema);
 
 // Now you have full type safety!
 ```
@@ -342,38 +344,37 @@ const userSchema = new Schema<UserDocument, UserModel, {}, ParanoiaQueryHelpers>
 ### Full TypeScript Example
 
 ```typescript
-import mongoose, { Schema, model } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 import Paranoia, { 
-  SoftDeleteDocument, 
-  ParanoiaModel, 
-  ParanoiaQueryHelpers 
+  type ParanoiaDocument, 
+  type ParanoiaQueryHelpers, 
+  type ParanoiaStatics 
 } from '@jsupa/mongoose-paranoia';
 
-// 1. Define your base interface
-interface IUser {
+// 1. Define your interface extending ParanoiaDocument
+interface IUser extends ParanoiaDocument {
   name: string;
   email: string;
 }
 
-// 2. Create document type with paranoia fields
-type UserDocument = SoftDeleteDocument<IUser>;
-
-// 3. Create model type with paranoia methods
-type UserModel = ParanoiaModel<UserDocument, ParanoiaQueryHelpers>;
-
-// 4. Define schema with full type safety
-const userSchema = new Schema<UserDocument, UserModel, {}, ParanoiaQueryHelpers>({
+// 2. Define schema with full type safety
+const userSchema = new Schema<
+  IUser,
+  Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics,
+  {},
+  ParanoiaQueryHelpers
+>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true }
 });
 
-// 5. Add plugin
+// 3. Add plugin
 userSchema.plugin(Paranoia);
 
-// 6. Create model
-const User = model<UserDocument, UserModel>('User', userSchema);
+// 4. Create model
+const User = mongoose.model<IUser, Model<IUser, ParanoiaQueryHelpers> & ParanoiaStatics>('User', userSchema);
 
-// 7. Use with full type safety!
+// 5. Use with full type safety!
 const user = await User.create({ name: 'John', email: 'john@example.com' });
 await user.restore(); // ✅ Type-safe instance method
 
