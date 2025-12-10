@@ -11,6 +11,7 @@
       "import": "./dist/index.mjs"
     }
   },
+  "files": [ "dist" ],
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
