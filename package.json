@@ -36,5 +36,13 @@
     "tsdown": "^0.17.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsupa/mongoose-paranoia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jsupa/mongoose-paranoia/issues"
+  },
+  "homepage": "https://github.com/jsupa/mongoose-paranoia#readme"
 }
