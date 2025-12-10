@@ -1,5 +1,5 @@
 {
-  "name": "mongoose-paranoia",
+  "name": "@jsupa/mongoose-paranoia",
   "version": "1.0.0",
   "description": "A Mongoose plugin for soft deletes with paranoid mode",
   "main": "./dist/index.mjs",
@@ -12,6 +12,9 @@
     }
   },
   "files": [ "dist" ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
