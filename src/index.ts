@@ -258,7 +258,7 @@ export default function Paranoia<
       if (!opts.deletedField) {
         throw new Error('deletedField is required for active query helper')
       }
-      return this.where({ [opts.deletedField]: false })
+      return this.where({ [opts.deletedField]: { $ne: true } })
     },
 
     /**
@@ -295,10 +295,10 @@ export default function Paranoia<
         return
       }
 
-      // Add deleted: false to the query filter
+      // Add deleted: {$ne: true} to include documents without the field (backwards compatibility)
       const filter = this.getFilter()
       if (filter[opts.deletedField] === undefined) {
-        this.where({ [opts.deletedField]: false })
+        this.where({ [opts.deletedField]: { $ne: true } })
       }
     }
 
@@ -329,7 +329,7 @@ export default function Paranoia<
       const hasDeletedFilter = firstStage?.$match?.[opts.deletedField] !== undefined
 
       if (!hasDeletedFilter) {
-        pipeline.unshift({ $match: { [opts.deletedField]: false } })
+        pipeline.unshift({ $match: { [opts.deletedField]: { $ne: true } } })
       }
     })
   }
